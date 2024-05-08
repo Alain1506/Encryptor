@@ -7,9 +7,9 @@ import java.util.Map;
 
 public class FileDecryptor {
 
-    private Path fileToDecrypt;
+    private final Path fileToDecrypt;
     private Path pathToNewFile;
-    private int complexity;
+    private final int complexity;
 
     private Map<Character, List<String>> encryptionMap = null;
 
@@ -24,8 +24,7 @@ public class FileDecryptor {
         this.complexity = complexity;
     }
 
-    public Path decryptFromFileToFile() throws IOException {
-
+    public void decryptFromFileToFile() throws IOException {
         Path decryptedFile = createNewFile();
 
         try (FileReader in = new FileReader(fileToDecrypt.toFile());
@@ -38,8 +37,6 @@ public class FileDecryptor {
                 out.write(String.valueOf(decryptedChar));
             }
         }
-
-        return decryptedFile;
     }
 
     private Path createNewFile() {

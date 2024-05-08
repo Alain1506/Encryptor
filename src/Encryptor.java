@@ -22,22 +22,21 @@ public class Encryptor {
                 System.out.println("Выберите операцию:"
                         + "\n0 - зашифровать файл в файл"
                         + "\n1 - зашифровать текст, введенный в консоль, в файл");
+                String task = reader.readLine();
 
-                String encodeCommand = reader.readLine();
-
-                if (encodeCommand.equals("0")) {
+                if (task.equals("0")) {
                     System.out.println("Введите абсолютный путь файла, который нужно зашифровать:");
                     String fileToEncrypt = reader.readLine();
                     System.out.println("Выберите сложность шифрования от 1 до 5:");
-                    int complexity = Integer.valueOf(reader.readLine());
+                    int complexity = Integer.parseInt(reader.readLine());
                     System.out.println("Введите абсолютный путь для нового файла:");
                     String pathToEncrypt = reader.readLine();
                     fileEncryptor = new FileEncryptor(Path.of(fileToEncrypt), Path.of(pathToEncrypt), complexity);
                     fileEncryptor.encryptFromFileToFile();
 
-                } else if (encodeCommand.equals("1")) {
+                } else if (task.equals("1")) {
                     System.out.println("Выберите сложность шифрования от 1 до 5:");
-                    int complexity = Integer.valueOf(reader.readLine());
+                    int complexity = Integer.parseInt(reader.readLine());
                     System.out.println("Введите абсолютный путь для нового файла:");
                     String pathToEncrypt = reader.readLine();
                     System.out.println("Введите текст для шифрования:");
@@ -47,36 +46,32 @@ public class Encryptor {
                 } else {
                     System.out.println("Вы ввели неверную команду");
                 }
-
             } else if (command.equals("1")) {
                 // расшифровать
                 System.out.println("Введите абсолютный путь файла, который нужно расшифровать:");
                 String fileToDecrypt = reader.readLine();
                 System.out.println("Выберите сложность шифрования вашего файла от 1 до 5:");
-                int complexity = Integer.valueOf(reader.readLine());
+                int complexity = Integer.parseInt(reader.readLine());
 
                 System.out.println("Выберите операцию:"
                         + "\n0 - расшифровать файл в файл"
                         + "\n1 - расшифровать файл в консоль");
+                String task = reader.readLine();
 
-                String extractCommand = reader.readLine();
-
-                if (extractCommand.equals("0")) {
+                if (task.equals("0")) {
                     System.out.println("Введите абсолютный путь для нового файла:");
                     String pathToDecrypt = reader.readLine();
                     fileDecryptor = new FileDecryptor(Path.of(fileToDecrypt), Path.of(pathToDecrypt), complexity);
                     fileDecryptor.decryptFromFileToFile();
-                } else if (extractCommand.equals("1")) {
+                } else if (task.equals("1")) {
                     fileDecryptor = new FileDecryptor(Path.of(fileToDecrypt), complexity);
                     fileDecryptor.decryptFromFileToConsole();
                 } else {
                     System.out.println("Вы ввели неверную команду");
                 }
-
             } else {
                 System.out.println("Вы ввели неверную команду");
             }
         }
-
     }
 }

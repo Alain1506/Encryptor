@@ -10,13 +10,13 @@ import java.util.Map;
 public class FileEncryptor {
 
     private Path fileToEncrypt;
-    private Path pathToNewFile;
-    private int complexity;
+    private final Path pathToNewFile;
+    private final int complexity;
     private String textFromConsole;
 
     final String LIST_OF_CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-    private Map<Character, List<String>> encryptionMap = new HashMap<>();
+    private final Map<Character, List<String>> encryptionMap = new HashMap<>();
 
     public FileEncryptor(Path fileToEncrypt, Path pathToNewFile, int complexity) {
         this.fileToEncrypt = fileToEncrypt;
@@ -30,8 +30,7 @@ public class FileEncryptor {
         this.textFromConsole = textFromConsole;
     }
 
-    public Path encryptFromFileToFile() throws IOException {
-
+    public void encryptFromFileToFile() throws IOException {
         Path encryptedFile = createNewFile();
 
         try (FileReader in = new FileReader(fileToEncrypt.toFile());
@@ -44,8 +43,6 @@ public class FileEncryptor {
             System.out.println("Файл не найден");
         }
         serializingKeysToFile();
-
-        return encryptedFile;
     }
 
     private Path createNewFile() {
@@ -78,6 +75,7 @@ public class FileEncryptor {
                 code = codeGenerator();
             }
             encryptionMap.get(nextChar).add(code);
+            Encryptor.listOfAllEncryptions.add(code);
             out.write(code);
         } else {
             out.write(encryptionMap.get(nextChar).get((int) (Math.random() * 3)));
@@ -94,8 +92,7 @@ public class FileEncryptor {
         reader.close();
     }
 
-    public Path encryptFromConsoleToFile() throws IOException {
-
+    public void encryptFromConsoleToFile() throws IOException {
         Path encryptedFile = createNewFile();
 
         try (InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(textFromConsole.getBytes(StandardCharsets.UTF_8)));
@@ -108,8 +105,6 @@ public class FileEncryptor {
             System.out.println("Файл не найден");
         }
         serializingKeysToFile();
-
-        return encryptedFile;
     }
 
     public String codeGenerator() {
