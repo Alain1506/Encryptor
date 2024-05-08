@@ -30,7 +30,7 @@ public class FileEncryptor {
         this.textFromConsole = textFromConsole;
     }
 
-    public void encryptFromFileToFile() throws IOException {
+    public void encryptFromFileToFile() {
         Path encryptedFile = createNewFile();
 
         try (FileReader in = new FileReader(fileToEncrypt.toFile());
@@ -59,7 +59,7 @@ public class FileEncryptor {
         return encryptedFile;
     }
 
-    private void encryptToFile(char nextChar, FileWriter out) throws IOException {
+    private void encryptToFile(char nextChar, FileWriter out) {
         if (!encryptionMap.containsKey(nextChar)) {
             String code = null;
             while (code == null || !Encryptor.listOfAllEncryptions.contains(code)) {
@@ -68,7 +68,11 @@ public class FileEncryptor {
             encryptionMap.put(nextChar, new ArrayList<>());
             encryptionMap.get(nextChar).add(code);
             Encryptor.listOfAllEncryptions.add(code);
-            out.write(code);
+            try {
+                out.write(code);
+            } catch (IOException e) {
+                System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
+            }
         } else if (encryptionMap.containsKey(nextChar) && encryptionMap.get(nextChar).size() < 3) {
             String code = null;
             while (code == null || !Encryptor.listOfAllEncryptions.contains(code)) {
@@ -76,23 +80,34 @@ public class FileEncryptor {
             }
             encryptionMap.get(nextChar).add(code);
             Encryptor.listOfAllEncryptions.add(code);
-            out.write(code);
+            try {
+                out.write(code);
+            } catch (IOException e) {
+                System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
+            }
         } else {
-            out.write(encryptionMap.get(nextChar).get((int) (Math.random() * 3)));
+            try {
+                out.write(encryptionMap.get(nextChar).get((int) (Math.random() * 3)));
+            } catch (IOException e) {
+                System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
+            }
         }
     }
 
-    private void serializingKeysToFile() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Введите абсолютный путь для файла-ключа:");
-        String fileWithKeys = reader.readLine();
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileWithKeys))) {
-            oos.writeObject(encryptionMap);
+    private void serializingKeysToFile() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+            System.out.println("Введите абсолютный путь для файла-ключа:");
+            String fileWithKeys = null;
+            fileWithKeys = reader.readLine();
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileWithKeys))) {
+                oos.writeObject(encryptionMap);
+            }
+        } catch (IOException e) {
+            System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
         }
-        reader.close();
     }
 
-    public void encryptFromConsoleToFile() throws IOException {
+    public void encryptFromConsoleToFile() {
         Path encryptedFile = createNewFile();
 
         try (InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(textFromConsole.getBytes(StandardCharsets.UTF_8)));

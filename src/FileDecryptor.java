@@ -1,30 +1,24 @@
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FileDecryptor {
 
     private final Path fileToDecrypt;
     private Path pathToNewFile;
-    private final int complexity;
-
     private Map<Character, List<String>> encryptionMap = null;
 
-    public FileDecryptor(Path fileToDecrypt, Path pathToNewFile, int complexity) {
+    public FileDecryptor(Path fileToDecrypt, Path pathToNewFile) {
         this.fileToDecrypt = fileToDecrypt;
         this.pathToNewFile = pathToNewFile;
-        this.complexity = complexity;
     }
 
-    public FileDecryptor(Path fileToDecrypt, int complexity) {
+    public FileDecryptor(Path fileToDecrypt) {
         this.fileToDecrypt = fileToDecrypt;
-        this.complexity = complexity;
     }
 
-    public void decryptFromFileToFile() throws IOException {
+    public void decryptFromFileToFile() {
         Path decryptedFile = createNewFile();
 
         try (FileReader in = new FileReader(fileToDecrypt.toFile());
@@ -36,6 +30,8 @@ public class FileDecryptor {
                 char decryptedChar = getDecryptedChar(in);
                 out.write(String.valueOf(decryptedChar));
             }
+        } catch (IOException e) {
+            System.out.println("Файл не найден");
         }
     }
 
@@ -53,22 +49,32 @@ public class FileDecryptor {
         return decryptedFile;
     }
 
-    public void decryptFromFileToConsole() throws IOException {
+    public void decryptFromFileToConsole() {
         try (FileReader in = new FileReader(fileToDecrypt.toFile())) {
 
             deserializingKeysFromFile();
+
+            System.out.println("Расшифрованный текст:");
 
             while (in.ready()) {
                 char decryptedChar = getDecryptedChar(in);
                 System.out.print(decryptedChar);
             }
+        } catch (IOException e) {
+            System.out.println("Файл не найден");
         }
     }
 
-    private char getDecryptedChar(FileReader in) throws IOException {
+    private char getDecryptedChar(FileReader in) {
         StringBuilder stringBuilder = new StringBuilder();
+
+        int complexity = Objects.requireNonNull(encryptionMap.entrySet().stream().findAny().orElse(null)).getValue().get(0).length();
         for (int i = 0; i < complexity; i++) {
-            stringBuilder.append((char) in.read());
+            try {
+                stringBuilder.append((char) in.read());
+            } catch (IOException e) {
+                System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
+            }
         }
         String code = stringBuilder.toString();
 
@@ -76,21 +82,41 @@ public class FileDecryptor {
         for (Character key : encryptionMap.keySet()) {
             if (encryptionMap.get(key).contains(code)) {
                 decryptedChar = key;
+                break;
             }
         }
 
         return decryptedChar;
     }
 
-    private void deserializingKeysFromFile() throws IOException {
+    private void deserializingKeysFromFile() {
+        String fileWithKeys = null;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Введите абсолютный путь файла-ключа:");
-        String fileWithKeys = reader.readLine();
 
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileWithKeys))) {
-            encryptionMap = (HashMap<Character, List<String>>) ois.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        while (true) {
+            try {
+                fileWithKeys = reader.readLine();
+            } catch (IOException e) {
+                System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
+            }
+
+            if (fileWithKeys != null && Files.exists(Path.of(fileWithKeys))) {
+                try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileWithKeys))) {
+                    encryptionMap = (HashMap<Character, List<String>>) ois.readObject();
+                    break;
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                } catch (StreamCorruptedException e) {
+                    System.out.println("Данный файл не содержит ключей");
+                } catch (FileNotFoundException e) {
+                    System.out.println("Файл не найден");
+                } catch (IOException e) {
+                    System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
+                }
+            } else {
+                System.out.println("Введите корректный путь к файлу-ключу:");
+            }
         }
     }
 }
