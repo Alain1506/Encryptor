@@ -6,33 +6,24 @@ import java.util.Map;
 
 public class FileEncryptor {
 
-    private final int complexity;
-    private final Reader reader;
-    private final Writer writer;
-    private final String keyStorageFile;
-
     final String LIST_OF_CHARACTERS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
     private final List<String> listOfAllEncryptions = new ArrayList<>();
     private final Map<Character, List<String>> mapWithKeys = new HashMap<>();
 
-    public FileEncryptor(Reader reader, Writer writer, int complexity, String keyStorageFile) {
-        this.reader = reader;
-        this.writer = writer;
-        this.complexity = complexity;
-        this.keyStorageFile = keyStorageFile;
+    public FileEncryptor() {
     }
 
-    public void encrypt() {
+    public void encrypt(Reader reader, Writer writer, int complexity, String keyStorageFile) {
         try {
             while (reader.ready()) {
                 char nextChar = (char) reader.read();
                 if (!mapWithKeys.containsKey(nextChar)) {
-                    String code = generateCode();
+                    String code = generateCode(complexity);
                     mapWithKeys.put(nextChar, new ArrayList<>(List.of(code)));
                     writer.write(code);
                 } else if (mapWithKeys.containsKey(nextChar) && mapWithKeys.get(nextChar).size() < 3) {
-                    String code = generateCode();
+                    String code = generateCode(complexity);
                     mapWithKeys.get(nextChar).add(code);
                     writer.write(code);
                 } else {
@@ -44,10 +35,10 @@ public class FileEncryptor {
         } catch (IOException e) {
             System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
         }
-        serializeKeysToFile();
+        serializeKeysToFile(keyStorageFile);
     }
 
-    private void serializeKeysToFile() {
+    private void serializeKeysToFile(String keyStorageFile) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(keyStorageFile))) {
             oos.writeObject(mapWithKeys);
         } catch (FileNotFoundException e) {
@@ -57,7 +48,7 @@ public class FileEncryptor {
         }
     }
 
-    public String generateCode() {
+    public String generateCode(int complexity) {
 
         String code = null;
         for (int j = 0; j < 5; j++) {
@@ -76,8 +67,7 @@ public class FileEncryptor {
             }
         }
         if (code == null) {
-            System.out.println("Невозможно закодировать ресурс, увеличьте сложность кодирования");
-            System.exit(0); //как вернуть задание в начало?
+            throw new RuntimeException("Невозможно зашифровать ресурс, увеличьте сложность шифрования");
         }
 
         return code;

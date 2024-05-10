@@ -4,22 +4,16 @@ import java.util.*;
 public class FileDecryptor {
 
     private Map<Character, List<String>> keys = null;
-    private final Reader reader;
-    private final Writer writer;
-    private String fileWithKeys;
     private int complexity = 0;
     private final Map<String, Character> convertedKeys = new HashMap<>();
 
-    public FileDecryptor(Reader reader, Writer writer, String fileWithKeys) {
-        this.reader = reader;
-        this.writer = writer;
-        this.fileWithKeys = fileWithKeys;
+    public FileDecryptor() {
     }
 
-    public void decrypt() {
+    public void decrypt(Reader reader, Writer writer, String fileWithKeys) {
 
         while (keys == null) {
-            deserializeKeysFromFile();
+            deserializeKeysFromFile(fileWithKeys);
         }
         try {
             while (reader.ready()) {
@@ -36,7 +30,7 @@ public class FileDecryptor {
                     System.out.println("Введенный вами файл ключа не подходит для раскодирования, введите корректный файл-ключ:");
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
                     fileWithKeys = bufferedReader.readLine();
-                    deserializeKeysFromFile();
+                    deserializeKeysFromFile(fileWithKeys);
                 }
                 writer.write(String.valueOf(decryptedChar));
             }
@@ -47,13 +41,11 @@ public class FileDecryptor {
         }
     }
 
-    private void deserializeKeysFromFile() {
+    private void deserializeKeysFromFile(String fileWithKeys) {
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileWithKeys))) {
             keys = (Map<Character, List<String>>) ois.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (ClassCastException e) {
+        } catch (ClassNotFoundException | ClassCastException e) {
             System.out.println("Класс не найден");
         } catch (StreamCorruptedException e) {
             System.out.println("Файл-ключ не содержит ключей, введите корректный файл-ключ:");
@@ -63,7 +55,7 @@ public class FileDecryptor {
             } catch (IOException ex) {
                 System.out.println("Возникла ошибка ввода-вывода: " + e.getMessage());
             }
-            deserializeKeysFromFile();
+            deserializeKeysFromFile(fileWithKeys);
         } catch (FileNotFoundException e) {
             System.out.println("Файл не найден");
         } catch (IOException e) {

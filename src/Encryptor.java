@@ -19,8 +19,11 @@ public class Encryptor {
 
                 if (command.equals("0")) {
                     //зашифровать
-                    System.out.println("Выберите сложность шифрования от 3 до 5:");
-                    int complexity = Integer.parseInt(reader.readLine());
+                    int complexity = 0;
+                    while (complexity < 3 || complexity > 5) {
+                        System.out.println("Выберите сложность шифрования от 3 до 5:");
+                        complexity = Integer.parseInt(reader.readLine());
+                    }
                     System.out.println("Введите абсолютный путь для нового файла:");
                     String fileWithResult = reader.readLine();
                     System.out.println("Введите абсолютный путь для файла-ключа:");
@@ -40,17 +43,21 @@ public class Encryptor {
                         if (source.equals("0")) {
                             System.out.println("Введите абсолютный путь файла, который нужно зашифровать:");
                             String fileWithSourse = reader.readLine();
+                            while (!Files.exists(Path.of(fileWithSourse))) {
+                                System.out.println("Данного файла не существует, введите корректный путь к файлу:");
+                                fileWithSourse = reader.readLine();
+                            }
                             FileReader in = new FileReader(Path.of(fileWithSourse).toFile());
                             FileWriter out = new FileWriter(Path.of(fileWithResult).toFile());
-                            fileEncryptor = new FileEncryptor(in, out, complexity, keyStorageFile);
-                            fileEncryptor.encrypt();
+                            fileEncryptor = new FileEncryptor();
+                            fileEncryptor.encrypt(in, out, complexity, keyStorageFile);
                         } else if (source.equals("1")) {
                             System.out.println("Введите текст для шифрования:");
                             String consoleEntry = reader.readLine();
                             InputStreamReader in = new InputStreamReader(new ByteArrayInputStream(consoleEntry.getBytes(StandardCharsets.UTF_8)));
                             FileWriter out = new FileWriter(Path.of(fileWithResult).toFile());
-                            fileEncryptor = new FileEncryptor(in, out, complexity, keyStorageFile);
-                            fileEncryptor.encrypt();
+                            fileEncryptor = new FileEncryptor();
+                            fileEncryptor.encrypt(in, out, complexity, keyStorageFile);
                         } else {
                             System.out.println("Вы ввели неверную команду");
                             continue;
@@ -62,6 +69,10 @@ public class Encryptor {
                     // расшифровать
                     System.out.println("Введите абсолютный путь файла, который нужно расшифровать:");
                     String encodedSource = reader.readLine();
+                    while (!Files.exists(Path.of(encodedSource))) {
+                        System.out.println("Данного файла не существует, введите корректный путь к файлу:");
+                        encodedSource = reader.readLine();
+                    }
                     System.out.println("Введите абсолютный путь файла-ключа:");
                     String fileWithKeys = reader.readLine();
 
@@ -82,13 +93,13 @@ public class Encryptor {
 
                             FileReader in = new FileReader(Path.of(encodedSource).toFile());
                             FileWriter out = new FileWriter(Path.of(fileWithResult).toFile());
-                            fileDecryptor = new FileDecryptor(in, out, fileWithKeys);
-                            fileDecryptor.decrypt();
+                            fileDecryptor = new FileDecryptor();
+                            fileDecryptor.decrypt(in, out, fileWithKeys);
                         } else if (task.equals("1")) {
                             FileReader in = new FileReader(Path.of(encodedSource).toFile());
                             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out));
-                            fileDecryptor = new FileDecryptor(in, out, fileWithKeys);
-                            fileDecryptor.decrypt();
+                            fileDecryptor = new FileDecryptor();
+                            fileDecryptor.decrypt(in, out, fileWithKeys);
                         } else {
                             System.out.println("Вы ввели неверную команду");
                             continue;
