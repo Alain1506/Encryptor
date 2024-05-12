@@ -1,1 +1,2 @@
 # Encryptor
+Pet project
